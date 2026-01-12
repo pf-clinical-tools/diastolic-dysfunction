@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diastolic Dysfunction – Bedside Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#fff; --text:#111; --muted:#556;
+    --line:#e6eaf0; --btn:#111; --btnText:#fff;
+    --good:#e6f4ea; --warn:#fff4e5; --bad:#fdecea;
+    --radius:14px;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  .wrap{ max-width:1200px; margin:0 auto; }
+  h1{ margin:0 0 6px; font-size:20px; line-height:1.2; }
+  .sub{ color:#444; font-size:14px; margin-bottom:12px; }
+  .sub strong{ color:#222; font-weight:800; }
+  .grid{ display:grid; grid-template-columns:1fr; gap:12px; align-items:start; }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,.05);
+  }
+  .sectionTitle{ font-weight:900; font-size:14px; margin:0 0 8px; }
+  label{ display:block; font-weight:800; font-size:13px; margin:10px 0 6px; }
+  input, select{
+    width:100%;
+    padding:12px 12px;
+    border-radius:12px;
+    border:1px solid #cfd8e3;
+    font-size:16px;
+    background:#fff;
+  }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .chips{ display:grid; gap:10px; margin-top:6px; }
+  .chip{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+  }
+  .chip input{ width:auto; margin-top:3px; }
+  .chip span{ font-size:14px; line-height:1.25; }
+  .btnbar{ display:flex; gap:10px; margin-top:12px; }
+  button{
+    flex:1;
+    padding:12px 14px;
+    border:0;
+    border-radius:14px;
+    background:var(--btn);
+    color:var(--btnText);
+    font-weight:900;
+    font-size:16px;
+    cursor:pointer;
+  }
+  button.secondary{ background:#fff; color:#111; border:1px solid #cfd8e3; }
+  .resultBox{ padding:12px; border-radius:14px; border:1px solid var(--line); }
+  .good{ background:var(--good); }
+  .warn{ background:var(--warn); }
+  .bad{ background:var(--bad); }
+  .pill{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid rgba(0,0,0,.05);
+  }
+  .pill.good{ background:var(--good); }
+  .pill.warn{ background:var(--warn); }
+  .pill.bad{ background:var(--bad); }
+  .muted{ color:var(--muted); font-size:13px; }
+  .hr{ height:1px; background:var(--line); margin:12px 0; }
+  details{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:#fff; }
+  summary{ font-weight:900; cursor:pointer; list-style:none; }
+  summary::-webkit-details-marker{ display:none; }
+  ul{ margin:8px 0 0 18px; }
+  .k{ font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12px; }
+  .sticky{ position:sticky; top:10px; z-index:10; }
+  @media (min-width: 860px){
+    body{ padding:20px; }
+    h1{ font-size:22px; }
+    .grid{ grid-template-columns: 1.25fr 0.75fr; gap:12px; }
+    .sticky{ top:16px; }
+  }
+  /* Expand indicator for optional sections (MDCalc-style) */
+  details.exp > summary::after { content: "▾"; float:right; color: var(--muted); font-weight: 900; }
+  details.exp[open] > summary::after { content: "▴"; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Diastolic Dysfunction – Bedside Tool <span style="font-size:12px; color:#888; font-weight:600;">v1.3.6 (Mobile)</span></h1>
+  <div class="sub"><strong>Works with missing data.</strong> If there isn’t enough information to classify filling pressure or grade diastolic function, the tool reports <strong>“Insufficient data”</strong>; the degree of confidence assigned will be <strong>LOW</strong> in terms of diastolic dysfunction. It will also list what’s missing.</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="sectionTitle">Inputs</div>
+
+      <details open>
+        <summary>Core measurements</summary>
+
+        <label>Rhythm</label>
+        <select id="rhythm">
+          <option value="SINUS">Sinus rhythm</option>
+          <option value="AF">Atrial fibrillation</option>
+        </select>
+
+        <label>LVEF (%)</label>
+        <input type="number" inputmode="decimal" id="lvef" placeholder="e.g., 55">
+
+        <div class="row2">
+          <div>
+            <label>Mitral E (cm/s)</label>
+            <input type="number" inputmode="decimal" id="E" placeholder="e.g., 70">
+          </div>
+          <div>
+            <label>Mitral A (cm/s)</label>
+            <input type="number" inputmode="decimal" id="A" placeholder="e.g., 90">
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label>E/A ratio</label>
+            <input type="number" inputmode="decimal" step="0.01" id="EA" placeholder="e.g., 0.78">
+          </div>
+          <div>
+            <label>DT (ms) (numeric)</label>
+            <input type="number" inputmode="numeric" id="DT" placeholder="e.g., 160">
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label>e′ septal (cm/s)</label>
+            <input type="number" inputmode="decimal" step="0.1" id="es" placeholder="e.g., 6.0">
+          </div>
+          <div>
+            <label>e′ lateral (cm/s)</label>
+            <input type="number" inputmode="decimal" step="0.1" id="el" placeholder="e.g., 8.0">
+          </div>
+        </div>
+
+        <label>LAVI (mL/m²)</label>
+        <input type="number" inputmode="decimal" id="lavi" placeholder="e.g., 42 (leave blank if not reported)">
+
+        <label>LA size (qualitative) (use if LAVI missing)</label>
+        <select id="la_qual">
+          <option value="">Not stated</option>
+          <option value="NORMAL">Normal</option>
+          <option value="MILD">Mildly dilated</option>
+          <option value="MOD">Moderately dilated</option>
+          <option value="SEV">Severely dilated</option>
+        </select>
+
+        <div class="row2">
+          <div>
+            <label>TR Vmax (m/s)</label>
+            <input type="number" inputmode="decimal" step="0.1" id="tr" placeholder="e.g., 3.0">
+          </div>
+          <div>
+            <label>PASP (mmHg)</label>
+            <input type="number" inputmode="numeric" id="pasp" placeholder="e.g., 45">
+          </div>
+        </div>
+
+        <label>LA reservoir strain (LARS, %) (optional)</label>
+        <input type="number" inputmode="decimal" step="0.1" id="lars" placeholder="e.g., 16">
+      </details>
+
+      <div style="height:10px"></div>
+
+      <details class="exp">
+        <summary>ⓘ Quality &amp; caveats</summary>
+
+        <label>Doppler quality</label>
+        <select id="quality">
+          <option value="UNKNOWN">Unknown</option>
+          <option value="GOOD">Good</option>
+          <option value="FAIR">Fair</option>
+          <option value="POOR">Poor</option>
+        </select>
+
+        <div class="chips">
+          <label class="chip">
+            <input type="checkbox" id="mr">
+            <span><b>Significant MR/MS or prior MV repair</b> (special population)</span>
+          </label>
+          <label class="chip">
+            <input type="checkbox" id="tachy">
+            <span><b>Tachycardia</b> or E–A fusion</span>
+          </label>
+          <label class="chip">
+            <input type="checkbox" id="pacing">
+            <span><b>Pacing rhythm</b></span>
+          </label>
+        </div>
+      </details>
+
+      <div style="height:10px"></div>
+
+      <details class="exp">
+        <summary>ⓘ Non-numerical substitutes</summary>
+        <div class="chips">
+          <label class="chip">
+            <input type="checkbox" id="restrictive_reported">
+            <span><b>Restrictive filling pattern reported</b> (qualitative surrogate for E/A ≥2 physiology; requires ≥1 corroborating pressure marker)</span>
+          </label>
+          <label class="chip">
+            <input type="checkbox" id="dt_short_reported">
+            <span><b>DT described as “short”</b> in report (qualitative; supportive only)</span>
+          </label>
+          <label class="chip">
+            <input type="checkbox" id="report_says_high_pressure">
+            <span><b>Report explicitly states elevated filling pressure</b> (confidence support only; does not override marker rules)</span>
+          </label>
+        </div>
+      </details>
+
+      <div style="height:10px"></div>
+
+      <!-- ✅ Inserted: Limitations, uncertainty & safe use (no logic change) -->
+      <details class="exp">
+        <summary>ⓘ Limitations, uncertainty &amp; safe use</summary>
+        <div class="muted" style="margin-top:10px; line-height:1.45">
+
+          <p><b>Strengths of this approach</b></p>
+          <ul>
+            <li>
+              Allowing an explicit <b>“Insufficient data / Indeterminate”</b> output and surfacing missing measurements
+              reflects real-world bedside and POCUS diastology, where acquisition of all guideline parameters is often not feasible.
+              Oversimplified rules that ignore this limitation have been criticised in the literature.
+            </li>
+            <li>
+              Incorporating data quality, rhythm, tachycardia/E–A fusion, pacing, and mitral valve disease as downgrades to confidence
+              reflects the settings where guideline documents and expert reviews caution against over-interpreting transmitral inflow or E/e′.
+            </li>
+            <li>
+              Explicit separation between the <b>LAP/filling pressure call</b> and formal <b>grading</b> (and acknowledgement that grading in AF or significant MR is intrinsically unreliable)
+              is consistent with expert commentary that, in many real-world patients, only LAP can be reasonably estimated while grading remains indeterminate.
+            </li>
+          </ul>
+
+          <p><b>Important limitations &amp; caveats</b></p>
+          <ul>
+            <li>
+              Any bedside algorithm based purely on echo variables remains vulnerable to loading conditions, heart rate, blood pressure, MR severity,
+              and RV/pulmonary vascular disease, which can distort E/e′, TR/PASP, and LA indices; POCUS diastology reviews stress integration with clinical context and image review,
+              not diagnostic use in isolation.
+            </li>
+            <li>
+              Published experience with simplified tools in acute care suggests that while sensitivity and overall accuracy can be acceptable,
+              specificity and grading accuracy fall when operators have limited echo expertise or outputs are applied rigidly without clinical synthesis.
+            </li>
+            <li>
+              The tool does not incorporate exercise or dynamic data, natriuretic peptides, or scoring systems such as HFA-PEFF/H<sub>2</sub>FPEF,
+              which are often necessary to resolve equivocal HFpEF where resting echo is non-diagnostic.
+            </li>
+          </ul>
+
+          <p><b>How to use it safely</b></p>
+          <ul>
+            <li>
+              Treat it as a structured checklist and integrator of standard indices, helpful to reduce cognitive load, highlight missing measurements,
+              and align output with published guideline logic, especially when reporting or teaching.
+            </li>
+            <li>
+              Do not rely on it as definitive: final judgement on diastolic dysfunction and HFpEF still needs echo image review, haemodynamic and clinical context,
+              and may require invasive or exercise testing in ambiguous cases.
+            </li>
+            <li>
+              Be especially cautious in AF with variable R–R, significant MR/MS, tachycardia/E–A fusion, advanced lung or pulmonary vascular disease,
+              or mechanically ventilated ICU patients, where indices perform less predictably and bedside algorithms are more likely to misclassify.
+            </li>
+          </ul>
+
+          <p>
+            In summary, as a bedside decision support tool that encodes current guideline logic, this is good for standardising and documenting diastolic assessment,
+            but it should be framed explicitly as an adjunct to expert interpretation rather than a replacement for full echocardiographic and clinical assessment.
+          </p>
+
+        </div>
+      </details>
+
+      <div class="btnbar">
+        <button onclick="calculate()">Calculate</button>
+        <button class="secondary" onclick="resetAll()">Reset</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px">
+        Minimal requirement for a non-AF LAP call: <b>≥2 strong pressure channels</b> (E/e′ avg, TR Vmax or PASP, LAVI or qualitative LA size, LA strain optional).
+      </div>
+    </div>
+
+    <div class="card sticky">
+      <div id="output" class="muted">Enter values and click <b>Calculate</b>.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function num(id){
+  const el=document.getElementById(id);
+  if(!el) return null;
+  const v=(el.value ?? "").toString().trim();
+  if(!v) return null;
+  const n=Number(v);
+  return Number.isFinite(n)? n : null;
+}
+function fmt(n,dp=1){ return (n===null || !Number.isFinite(n))? "—" : n.toFixed(dp); }
+function esc(s){
+  return String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+function laQualLabel(code){
+  if(!code) return "Not stated";
+  return {NORMAL:"Normal",MILD:"Mildly dilated",MOD:"Moderately dilated",SEV:"Severely dilated"}[code] || "Not stated";
+}
+function pill(label,level){
+  const cls = level==="HIGH"?"good":(level==="LOW"?"bad":"warn");
+  return `<span class="pill ${cls}">${esc(label)}</span>`;
+}
+function resetAll(){
+  const ids=["lvef","E","A","EA","DT","es","el","lavi","tr","pasp","lars"];
+  ids.forEach(id=>document.getElementById(id).value="");
+  ["rhythm","quality","la_qual"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(id==="rhythm") el.value="SINUS";
+    else if(id==="quality") el.value="UNKNOWN";
+    else el.value="";
+  });
+  ["mr","tachy","pacing","restrictive_reported","dt_short_reported","report_says_high_pressure"].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById("output").innerHTML = `<div class="muted">Enter values and click <b>Calculate</b>.</div>`;
+}
+
+function calculate(){
+  try{
+    const outEl = document.getElementById("output");
+    if(!outEl){ return; }
+
+    const rhythm=document.getElementById("rhythm").value;
+    const quality=document.getElementById("quality").value;
+
+    const special=document.getElementById("mr").checked;
+    const tachy=document.getElementById("tachy").checked;
+    const pacing=document.getElementById("pacing").checked;
+
+    const restrictiveReported=document.getElementById("restrictive_reported").checked;
+    const dtShortReported=document.getElementById("dt_short_reported").checked;
+    const reportSaysHighPressure=document.getElementById("report_says_high_pressure").checked;
+
+    const laQual=document.getElementById("la_qual").value || null;
+
+    const LVEF=num("lvef");
+    const E=num("E");
+    const A=num("A");
+    const EA=num("EA");
+    const DT=num("DT");
+    const es=num("es");
+    const el=num("el");
+    const lavi=num("lavi");
+    const tr=num("tr");
+    const pasp=num("pasp");
+    const lars=num("lars");
+
+    const eavg=(es!==null && el!==null)? (es+el)/2 : null;
+    const Ee=(E!==null && eavg!==null && eavg>0)? (E/eavg) : null;
+
+    const CUT={ Ee_abn:14, TR_abn:2.8, PASP_abn:35, LAVI_abn:34, LARS_abn:18, E_low:50, DT_short:160,
+                AF:{E_high:100, septal_Ee:11, DT_short:160} };
+
+    const present=[], abnStrong=[], normStrong=[], weak=[], missing=[];
+    let usedLAasSurrogate=false;
+
+    // Strong channels: Ee, TR/PASP, LA, LARS
+    const hasEe = (Ee!==null);
+    if(!hasEe) missing.push("Average E/e′ (needs E + both e′)");
+    else{
+      present.push(`Average E/e′ = ${fmt(Ee,1)}`);
+      (Ee>=CUT.Ee_abn)? abnStrong.push("Average E/e′ elevated (≥14)") : normStrong.push("Average E/e′ not elevated");
+    }
+
+    const hasTRorP = (tr!==null || pasp!==null);
+    if(!hasTRorP) missing.push("TR Vmax or PASP");
+    else{
+      if(tr!==null) present.push(`TR Vmax = ${fmt(tr,1)} m/s`);
+      if(pasp!==null) present.push(`PASP = ${fmt(pasp,0)} mmHg`);
+      const abn = (tr!==null && tr>=CUT.TR_abn) || (pasp!==null && pasp>=CUT.PASP_abn);
+      abn? abnStrong.push("TR Vmax/PASP elevated") : normStrong.push("TR Vmax/PASP not elevated");
+    }
+
+    const hasLAmarker = (lavi!==null) || (laQual!==null);
+    if(lavi!==null){
+      present.push(`LAVI = ${fmt(lavi,0)} mL/m²`);
+      (lavi>CUT.LAVI_abn)? abnStrong.push("LAVI enlarged (>34)") : normStrong.push("LAVI not enlarged");
+    } else if(laQual!==null){
+      usedLAasSurrogate=true;
+      present.push(`LA size (qualitative) = ${laQualLabel(laQual)}`);
+      if(laQual==="MOD" || laQual==="SEV") abnStrong.push("LA enlarged (qualitative: moderate/severe)");
+      else if(laQual==="NORMAL") normStrong.push("LA not enlarged (qualitative)");
+      else if(laQual==="MILD") weak.push("LA mildly enlarged (qualitative: weak chronic support)");
+    } else {
+      missing.push("LAVI or qualitative LA size");
+    }
+
+    const hasLARS = (lars!==null);
+    if(hasLARS){
+      present.push(`LA strain (LARS) = ${fmt(lars,1)}%`);
+      (lars<=CUT.LARS_abn)? abnStrong.push("LA strain reduced (≤18%)") : normStrong.push("LA strain not reduced");
+    }
+
+    // DT supportive
+    const dtNumericShort = (DT!==null && DT<=CUT.DT_short);
+    if(DT!==null){
+      present.push(`DT = ${fmt(DT,0)} ms`);
+      if(dtNumericShort) weak.push("Short DT (≤160 ms) – supportive only");
+    }
+    if(dtShortReported) weak.push("DT described as short (qualitative) – supportive only");
+
+    const restrictivePhysiology = restrictiveReported || (EA!==null && EA>=2.0);
+    if(restrictiveReported) present.push("Restrictive filling pattern reported (qualitative)");
+
+    const strongChannelsAvailable = (hasEe?1:0)+(hasTRorP?1:0)+(hasLAmarker?1:0)+(hasLARS?1:0);
+    const strongAbnCount = abnStrong.length;
+    const strongNormCount = normStrong.length;
+
+    const dtSupportActive = (dtNumericShort || dtShortReported) && strongAbnCount>=1;
+
+    // Insufficient data flag (forces LOW confidence & explicit messaging)
+    let insufficientData = false;
+
+    // LAP
+    let LAP="INDETERMINATE";
+    let LAP_reason="";
+
+    if(rhythm==="AF"){
+      const afMarkers=[];
+      let afAvail=0, afAbn=0;
+
+      if(E!==null){ afAvail++; if(E>=CUT.AF.E_high){ afAbn++; afMarkers.push("Mitral E high (≥100 cm/s)"); } }
+      if(E!==null && es!==null && es>0){
+        afAvail++;
+        const septalEe = E/es;
+        if(septalEe> CUT.AF.septal_Ee){ afAbn++; afMarkers.push("Septal E/e′ >11"); }
+      }
+      if(hasTRorP){
+        afAvail++;
+        const abn = (tr!==null && tr>=CUT.TR_abn) || (pasp!==null && pasp>=CUT.PASP_abn);
+        if(abn){ afAbn++; afMarkers.push("TR Vmax/PASP elevated"); }
+      }
+      if(DT!==null){
+        afAvail++;
+        if(DT<=CUT.AF.DT_short){ afAbn++; afMarkers.push("DT short (≤160 ms)"); }
+      } else if(dtShortReported && afAvail>=1){
+        afAvail++; afAbn++; afMarkers.push("DT described as short (qualitative)");
+      }
+
+      if(afAvail<2){
+        LAP="INDETERMINATE";
+        insufficientData = true;
+        LAP_reason="Insufficient AF-specific data (need ≥2 AF markers).";
+      } else if(afAbn>=2){
+        LAP="INCREASED";
+        LAP_reason="AF markers supporting increased LAP: "+afMarkers.join("; ")+"."; 
+      } else if(afAbn===0){
+        LAP="NORMAL";
+        LAP_reason="No AF markers supporting increased LAP.";
+      } else {
+        LAP="INDETERMINATE";
+        LAP_reason="Mixed/limited AF marker pattern.";
+      }
+    } else {
+      if(strongChannelsAvailable<2){
+        LAP="INDETERMINATE";
+        insufficientData = true;
+        LAP_reason="Insufficient data (need ≥2 strong pressure channels).";
+      } else {
+        if(strongAbnCount>=2) LAP="INCREASED";
+        else if(strongAbnCount===0) LAP="NORMAL";
+        else LAP="INDETERMINATE";
+
+        if(restrictivePhysiology && strongAbnCount>=1){
+          LAP="INCREASED";
+          LAP_reason="Restrictive physiology present + corroborating abnormal pressure marker(s).";
+        }
+
+        if(LAP==="INDETERMINATE" && strongAbnCount===1 && dtSupportActive){
+          LAP="INCREASED";
+          LAP_reason="One abnormal pressure marker plus short DT (supportive) increases likelihood of elevated LAP.";
+        }
+
+        if(usedLAasSurrogate && laQual==="MILD" && strongAbnCount===0){
+          LAP="INDETERMINATE";
+          LAP_reason="Only weak chronic marker (mild LA dilation) without strong abnormal pressure markers.";
+        }
+      }
+    }
+
+    // Grade mapping
+    const gradeReliable = (rhythm==="SINUS" && !special);
+    const effectiveEA = (EA!==null)? EA : (restrictiveReported ? 2.0 : null);
+
+    let GRADE="NOT_REPORTED";
+    let gradeNote="";
+
+    if(gradeReliable){
+      if(effectiveEA===null || E===null){
+        GRADE="INDETERMINATE";
+        gradeNote="Cannot grade without E and E/A (or restrictive filling reported).";
+      } else {
+        if(effectiveEA<=0.8 && E<=CUT.E_low && LAP==="NORMAL") GRADE="GRADE_I";
+        else if(effectiveEA>0.8 && effectiveEA<2.0 && LAP==="INCREASED") GRADE="GRADE_II";
+        else if(effectiveEA>=2.0 && LAP==="INCREASED") GRADE="GRADE_III";
+        else GRADE="INDETERMINATE";
+      }
+    } else {
+      if(rhythm==="AF") gradeNote="Formal diastolic grading is limited in atrial fibrillation; LAP is reported using the AF pathway.";
+      if(special) gradeNote="Mitral valve disease/intervention limits reliability of transmitral inflow grading; LAP is emphasised.";
+    }
+
+    // Confidence (always produced)
+    let DQS=0;
+    if(quality==="GOOD") DQS+=2;
+    else if(quality==="FAIR") DQS+=1;
+    else if(quality==="POOR") DQS-=2;
+
+    DQS += (rhythm==="SINUS") ? 2 : -2;
+    if(special) DQS -= 2;
+    if(tachy) DQS -= 1;
+    if(pacing) DQS -= 1;
+
+    let EAS=0;
+    if(rhythm==="SINUS"){
+      if(strongChannelsAvailable>=3) EAS+=2;
+      EAS += Math.min(strongAbnCount,4);
+      EAS += Math.min(strongNormCount,3);
+      if(effectiveEA!==null && (effectiveEA<=0.8 || effectiveEA>=2.0)) EAS += 1;
+      if(usedLAasSurrogate && lavi===null) EAS -= 1;
+      if(dtSupportActive) EAS += 1;
+      if(restrictiveReported) EAS += 1;
+      if(reportSaysHighPressure) EAS += 1;
+    } else {
+      let afAvail =
+        (E!==null?1:0) +
+        ((E!==null && es!==null && es>0)?1:0) +
+        (hasTRorP?1:0) +
+        (DT!==null?1:0);
+
+      let afAbn =
+        (E!==null && E>=CUT.AF.E_high?1:0) +
+        ((E!==null && es!==null && es>0 && (E/es)>CUT.AF.septal_Ee)?1:0) +
+        ((hasTRorP && ((tr!==null && tr>=CUT.TR_abn) || (pasp!==null && pasp>=CUT.PASP_abn)))?1:0) +
+        (DT!==null && DT<=CUT.AF.DT_short?1:0);
+
+      if(dtShortReported && afAvail>=1){ afAvail+=1; afAbn+=1; }
+      if(afAvail>=3) EAS+=2;
+      EAS += Math.min(afAbn,4);
+      EAS += Math.min(Math.max(0,afAvail-afAbn),3);
+      if(reportSaysHighPressure) EAS+=1;
+    }
+
+    let CONF="MODERATE";
+    if(insufficientData){
+      CONF="LOW";
+    } else if(DQS>=3 && EAS>=6){
+      CONF="HIGH";
+    } else if(DQS<=0 || EAS<=2){
+      CONF="LOW";
+    }
+
+    const lapText = (LAP==="INCREASED")?"Increased":(LAP==="NORMAL"?"Normal":"Indeterminate");
+    const confText = (CONF==="HIGH")?"High":(CONF==="LOW")?"Low":"Moderate";
+    const confP = pill(confText, CONF);
+
+    let gradeText="Not reported";
+    if(GRADE==="GRADE_I") gradeText="Grade I – impaired relaxation";
+    else if(GRADE==="GRADE_II") gradeText="Grade II – pseudonormal";
+    else if(GRADE==="GRADE_III") gradeText="Grade III – restrictive physiology";
+    else if(GRADE==="INDETERMINATE") gradeText="Indeterminate";
+
+    const cautions=[];
+    if(special) cautions.push("Significant MR/MS or prior MV repair (special population)");
+    if(rhythm==="AF") cautions.push("Atrial fibrillation");
+    if(tachy) cautions.push("Tachycardia / E–A fusion");
+    if(pacing) cautions.push("Pacing rhythm");
+    if(quality==="POOR") cautions.push("Poor Doppler quality");
+    if(quality==="UNKNOWN") cautions.push("Doppler quality not stated");
+    if(usedLAasSurrogate && lavi===null) cautions.push("Qualitative LA size used as surrogate for LAVI (less precise)");
+    if(restrictiveReported) cautions.push("Restrictive filling was qualitative (requires corroboration)");
+    if(dtShortReported && DT===null) cautions.push("DT short was qualitative (supportive only)");
+    if(reportSaysHighPressure) cautions.push("Narrative statement used for confidence only (did not override marker rules)");
+
+    const missingSummary=[...missing];
+    if(rhythm==="SINUS" && E===null) missingSummary.push("E velocity missing (limits grading)");
+    if(rhythm==="SINUS" && EA===null && !restrictiveReported) missingSummary.push("E/A ratio missing (or tick ‘restrictive filling reported’ if stated)");
+
+    const boxCls = (CONF==="HIGH")?"good":(CONF==="LOW")?"bad":"warn";
+
+    const why=[];
+    if(insufficientData) why.push("Insufficient data: tool cannot make a reliable LAP call with the measures provided.");
+    if(abnStrong.length) why.push("Strong abnormal: "+abnStrong.join(", "));
+    if(dtSupportActive) why.push("Supportive: short DT + abnormal marker(s)");
+    if(restrictivePhysiology) why.push("Pattern: restrictive physiology present");
+    if(reportSaysHighPressure) why.push("Narrative: report states elevated filling pressure (confidence only)");
+    if(!why.length) why.push("No strong abnormal pressure markers detected.");
+    if(LAP_reason) why.push(LAP_reason);
+
+    let html = `
+      <div class="resultBox ${boxCls}">
+        <div style="font-weight:900; font-size:14px; margin-bottom:6px;">Results</div>
+        <div><b>Estimated LAP (rest):</b> ${lapText}</div>
+        <div><b>Diastolic grade:</b> ${gradeText}</div>
+        <div style="margin-top:6px;"><b>Confidence:</b> ${confP} <span class="muted">(DQS=${DQS}, EAS=${EAS})</span></div>
+        ${insufficientData ? `<div class="muted" style="margin-top:8px"><b>Status:</b> No sufficient data for a reliable LAP call. See “Missing / incomplete data”.</div>` : ``}
+      </div>
+
+      <div class="hr"></div>
+
+      <details open>
+        <summary>Mini-report</summary>
+        <div class="muted" style="margin-top:8px">
+          <div><b>LVEF:</b> ${LVEF!==null? fmt(LVEF,0)+"%":"—"} &nbsp; <b>Rhythm:</b> ${rhythm==="SINUS"?"Sinus":"AF"}</div>
+          <div><b>Derived:</b> e′ avg ${fmt(eavg,1)} cm/s; Avg E/e′ ${fmt(Ee,1)}</div>
+          <div><b>Inputs used:</b> ${present.length? esc(present.join(" · ")):"—"}</div>
+        </div>
+      </details>
+
+      <div class="hr"></div>
+
+      <details open>
+        <summary>Explainability</summary>
+        <div class="muted" style="margin-top:8px">
+          <div><b>Strong channels available:</b> ${rhythm==="SINUS"? strongChannelsAvailable : "AF pathway"}</div>
+          <div><b>Strong abnormal markers:</b> ${abnStrong.length? esc(abnStrong.join(", ")):"None"}</div>
+          <div><b>Supportive-only markers:</b> ${weak.length? esc(weak.join(", ")):"None"}</div>
+          ${usedLAasSurrogate && lavi===null ? `<div><b>LA surrogate used:</b> ${esc(laQualLabel(laQual))} (qualitative)</div>` : ``}
+          ${gradeNote? `<div style="margin-top:8px"><b>Note:</b> ${esc(gradeNote)}</div>` : ``}
+          <div class="k" style="margin-top:8px">${esc(why.join(" | "))}</div>
+        </div>
+      </details>
+    `;
+
+    if(cautions.length){
+      html += `
+        <div class="hr"></div>
+        <details>
+          <summary>Cautions</summary>
+          <ul class="muted" style="margin-top:8px">${cautions.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>
+          <div class="muted" style="margin-top:8px">
+            This estimates resting filling pressure/physiology; it does not diagnose HFpEF on its own.
+            Supportive qualitative inputs are used conservatively to protect specificity.
+          </div>
+        </details>
+      `;
+    }
+
+    if(missingSummary.length){
+      html += `
+        <div class="hr"></div>
+        <details open>
+          <summary>Missing / incomplete data</summary>
+          <ul class="muted" style="margin-top:8px">${missingSummary.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>
+        </details>
+      `;
+    }
+
+    html += `
+      <div class="hr"></div>
+      <div class="muted">
+        Grade IV: Not assigned in keeping with current grading recommendations. Restrictive physiology is reported as Grade III pattern; reversibility requires serial data or response to preload/therapy.</div>
+    `;
+
+    outEl.innerHTML = html;
+  } catch(err){
+    const outEl=document.getElementById("output");
+    if(outEl){
+      outEl.innerHTML = `<div class="resultBox bad"><div style="font-weight:900; font-size:14px; margin-bottom:6px;">Results</div><div><b>Status:</b> Unable to calculate (internal error).</div><div class="muted" style="margin-top:6px;">Try again or reset.</div><div class="k" style="margin-top:8px;">${esc(err)}</div></div>`;
+    }
+  }
+}
+</script>
+
+  <!-- References + copyright are intentionally below the left Inputs box (not inside the right Results panel) -->
+  <div class="card" style="margin-top:12px;">
+    <details class="exp">
+      <summary>ⓘ References</summary>
+      <div class="muted" style="margin-top:10px;">
+        <ol style="margin:8px 0 0 18px; padding:0;">
+          <li>Nagueh SF, Smiseth OA, Appleton CP, Byrd BF 3rd, Dokainish H, Edvardsen T, et al. Recommendations for the evaluation of left ventricular diastolic function by echocardiography: an update from the American Society of Echocardiography and the European Association of Cardiovascular Imaging. <i>J Am Soc Echocardiogr</i>. 2016;29(4):277–314. doi:10.1016/j.echo.2016.01.011.</li>
+          <li>Ommen SR, Nishimura RA, Appleton CP, Miller FA, Oh JK, Redfield MM, et al. Clinical utility of Doppler echocardiography and tissue Doppler imaging in the estimation of left ventricular filling pressures: a comparative simultaneous Doppler-catheterization study. <i>Circulation</i>. 2000;102(15):1788–1794. doi:10.1161/01.CIR.102.15.1788.</li>
+          <li>Borlaug BA, Paulus WJ. Heart failure with preserved ejection fraction: pathophysiology, diagnosis, and treatment. <i>Eur Heart J</i>. 2011;32(6):670–679. doi:10.1093/eurheartj/ehq426.</li>
+          <li>Pieske B, Tschöpe C, de Boer RA, Fraser AG, Anker SD, Donal E, et al. How to diagnose heart failure with preserved ejection fraction: the HFA–PEFF diagnostic algorithm: a consensus recommendation from the Heart Failure Association of the European Society of Cardiology. <i>Eur Heart J</i>. 2019;40(40):3297–3317. doi:10.1093/eurheartj/ehz641.</li>
+          <li>Reddy YNV, Carter RE, Obokata M, Redfield MM, Borlaug BA. A simple, evidence-based approach to help guide diagnosis of heart failure with preserved ejection fraction. <i>Circulation</i>. 2018;138(9):861–870. doi:10.1161/CIRCULATIONAHA.118.034646.</li>
+          <li>Borlaug BA, Nishimura RA, Sorajja P, Lam CSP, Redfield MM. Exercise hemodynamics enhance diagnosis of early heart failure with preserved ejection fraction. <i>Circ Heart Fail</i>. 2010;3(5):588–595. doi:10.1161/CIRCHEARTFAILURE.109.930701.</li>
+          <li>Lam CSP, Roger VL, Rodeheffer RJ, Borlaug BA, Enders FT, Redfield MM. Pulmonary hypertension in heart failure with preserved ejection fraction: a community-based study. <i>J Am Coll Cardiol</i>. 2009;53(13):1119–1126. doi:10.1016/j.jacc.2008.11.051.</li>
+          <li>McDonagh TA, Metra M, Adamo M, Gardner RS, Baumbach A, Böhm M, et al; ESC Scientific Document Group. 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure. <i>Eur Heart J</i>. 2021;42(36):3599–3726. doi:10.1093/eurheartj/ehab368.</li>
+        </ol>
+        <div class="muted" style="margin-top:10px;">
+          Reference list is provided for transparency and clinical governance; the tool implements a conservative, multiparametric approach and highlights when data are insufficient.
+        </div>
+      </div>
+    </details>
+
+    <div class="hr"></div>
+
+    <div class="muted">
+      <b>Copyright</b><br>
+      © 2025 Prabhath Fernando MBBS MD FRCP. All rights reserved.<br>
+      This tool is provided for clinical decision support and governance review; it does not replace clinician judgement.
+    </div>
+  </div>
+
+</body>
+</html>
