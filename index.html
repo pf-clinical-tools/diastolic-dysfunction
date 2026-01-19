@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
 <!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_0_LOCKED_FINAL_NO_NP_DERIVATION_BOX -->
-<!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_1_3_KEY_COPY_BLOCK_SMALLER_CALLOUTS_BSE_CITATION_NO_LOGIC_DRIFT -->
+<!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_1_5_CHROME_CACHE_BYPASS_NO_DRAFT_HEADING_NO_SCOPE_COPY_SMALL_CALLOUTS_BSE_NO_LOGIC_DRIFT -->
 
 <style>
   :root{
@@ -92,7 +91,7 @@
     padding:12px;
     border-radius:10px;
     border:1px solid var(--border);
-    font-size:16px;
+    font-size:16px; /* prevents iOS zoom */
     background:#fff;
   }
 
@@ -197,29 +196,30 @@
     border:0;
   }
 
-  /* --- Key interpretation callouts (smaller height) --- */
+  /* --- KEY INTERPRETATION callouts (shorter height) --- */
   .callout{
     border:1px solid var(--border);
-    border-radius:12px;
-    padding:8px 10px;           /* smaller */
-    margin:6px 0;               /* smaller */
+    border-radius:10px;
+    padding:6px 8px;     /* reduced */
+    margin:4px 0;        /* reduced */
     background:#fff;
   }
   .callout .title{
     font-weight:900;
-    margin-bottom:3px;          /* smaller */
-    font-size:0.92rem;          /* smaller */
+    margin-bottom:2px;   /* reduced */
+    font-size:0.86rem;   /* reduced */
+    line-height:1.2;
   }
   .callout.ok{
-    border-left:5px solid rgba(22,101,52,.85);
+    border-left:4px solid rgba(22,101,52,.85);
     background:rgba(22,101,52,.06);
   }
   .callout.warn{
-    border-left:5px solid rgba(180,83,9,.85);
+    border-left:4px solid rgba(180,83,9,.85);
     background:rgba(180,83,9,.07);
   }
   .callout.stop{
-    border-left:5px solid rgba(185,28,28,.85);
+    border-left:4px solid rgba(185,28,28,.85);
     background:rgba(185,28,28,.07);
   }
 
@@ -227,11 +227,6 @@
     margin-top:10px;
     font-weight:900;
     font-size:0.98rem;
-  }
-  .divider{
-    height:1px;
-    background:var(--border);
-    margin:10px 0;
   }
 </style>
 </head>
@@ -243,10 +238,10 @@
   <div class="card" style="background:linear-gradient(135deg,#0f766e,#064e3b); color:#ffffff;">
     <h1>Clinical Interpretation of Diastolic Function in Suspected Heart Failure</h1>
     <p class="muted" style="color:#e5e7eb; margin-top:4px;">
-      v1.1.3 — NICE-first documentation framework. Emphasises scope control, dominant physiology and probabilistic attribution.
+      v1.1.5 — NICE-first documentation framework. Emphasises dominant physiology and probabilistic attribution.
     </p>
     <p class="tiny" style="color:#e5e7eb; margin-top:6px;">
-      Not a diagnostic HFpEF or diastolic grading tool; use within a wider guideline-based pathway.
+      BUILD STAMP: CI_DIASTOLIC_HF_V1_1_5_CHROME_CACHE_BYPASS (if Chrome doesn’t show this, it’s serving an old file)
     </p>
   </div>
 
@@ -469,17 +464,17 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 
   <!-- MODULE 5 -->
   <div class="card" id="module5">
-    <h2>Module 5 — Draft documentation text (auto-generated)</h2>
+    <h2>Module 5 — Output</h2>
     <p class="muted">
-      The output below is generated automatically from Modules 1–4. It supports documentation only and must be reviewed by the clinician.
+      This output is generated automatically from Modules 1–4. It supports documentation only and must be reviewed by the clinician.
       It does not constitute a diagnosis or a treatment directive.
     </p>
 
     <div class="outbox">
-      <h3>Draft documentation text (copy/paste)</h3>
+      <h3>Output text</h3>
 
       <!-- Copy-only block -->
-      <div id="copyBlock" class="output">Complete Modules 1–4 to generate draft documentation text.</div>
+      <div id="copyBlock" class="output">Complete Modules 1–4 to generate output.</div>
 
       <!-- Treatment shown separately (not copied) -->
       <div id="treatBlock" class="output" style="margin-top:10px;"></div>
@@ -572,7 +567,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       gate.innerHTML = 'Complete both items to proceed. <span class="muted">(NICE: HF is a clinical syndrome.)</span>';
       setCardEnabled('efGateCard', false);
       ['module2','module3','module4','module5'].forEach(id=>setCardEnabled(id,false));
-      el('copyBlock').textContent = 'Complete Module 1 and EF gate to generate draft documentation text.';
+      el('copyBlock').textContent = 'Complete Module 1 and EF gate to generate output.';
       el('treatBlock').textContent = '';
       el('copyBtn').disabled = true;
       return false;
@@ -592,7 +587,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       gate.textContent = 'Select one EF category to proceed.';
       ['module2','module3','module4','module5'].forEach(id=>setCardEnabled(id,false));
       el('copyBtn').disabled = true;
-      el('copyBlock').textContent = 'Select an EF category to generate draft documentation text.';
+      el('copyBlock').textContent = 'Select an EF category to generate output.';
       el('treatBlock').textContent = '';
       return false;
     }
@@ -805,7 +800,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     else if (structuralSupport) hfpEfStatus = 'supportive';
     else hfpEfStatus = 'indeterminate';
 
-    if (significantAS) hfpEfStatus = 'indeterminate'; // AS-dominant safeguard (as agreed)
+    if (significantAS) hfpEfStatus = 'indeterminate'; // AS-dominant safeguard
 
     const interpretive = [];
     const treatment = [];
@@ -873,7 +868,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       if (echoText){
         para.push('Echocardiography demonstrates structural findings as follows: ' + echoText.replace(/\n+/g,' ').trim());
       } else {
-        para.push('Echocardiography is used to exclude alternative dominant pathology and provide supportive structural context; normal resting findings do not exclude exertional or load-dependent HFpEF.');
+        para.push('Echocardiography is used to exclude alternative dominant pathology and provide supportive structural context; normal resting findings do not exclude exertional or load/heart-rate dependent HFpEF.');
       }
 
       if (npText){
@@ -927,10 +922,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       treatment.push(`<ul>${other.map(x=>`<li>${x}</li>`).join('')}</ul>`);
     }
 
-    /* Scope reminder box removed as requested; keep a single scope sentence at bottom of interpretive block (copies with interpretive) */
-    interpretive.push(`<div class="divider"></div>`);
-    interpretive.push(`<div><b>Scope:</b> This framework does not assign a diastolic grade or filling pressure; it supports documentation only and should be combined with LA/TR data and natriuretic peptides for formal diastolic assessment.</div>`);
-
+    // IMPORTANT: no scope sentence appended here (per your request)
     el('copyBlock').innerHTML = interpretive.join('\n');
     el('treatBlock').innerHTML = treatment.join('\n');
     el('copyBtn').disabled = false;
@@ -940,7 +932,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     try{
       await navigator.clipboard.writeText(text);
       return true;
-    }catch(e){ /* fall through */ }
+    }catch(e){}
 
     try{
       const ta = el('fallbackArea');
@@ -963,7 +955,6 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
   }
 
   el('copyBtn').addEventListener('click', async ()=>{
-    // Copy ONLY interpretive + key interpretation (copyBlock)
     const textToCopy = el('copyBlock').innerText;
     const ok = await copyTextToClipboard(textToCopy);
     if (ok){
@@ -989,7 +980,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 
     el('echoSnips').textContent = 'Enter available echocardiographic values above to generate supportive statements.';
     el('npSnip').textContent = 'Enter BNP and/or NT-proBNP to generate NP interpretation.';
-    el('copyBlock').textContent = 'Complete Modules 1–4 to generate draft documentation text.';
+    el('copyBlock').textContent = 'Complete Modules 1–4 to generate output.';
     el('treatBlock').textContent = '';
     el('copyBtn').disabled = true;
 
@@ -1002,6 +993,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     i.addEventListener('input', buildFinal);
   });
 
+  // defaults
   el('mr_none').checked = true;
   el('as_none').checked = true;
   el('rhythm_sinus').checked = true;
