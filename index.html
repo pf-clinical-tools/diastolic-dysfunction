@@ -5,8 +5,23 @@
 <title>Clinical Interpretation of Diastolic Function in Suspected Heart Failure</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-<!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_0_LOCKED_FINAL_NO_NP_DERIVATION_BOX -->
-<!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_1_5_CHROME_CACHE_BYPASS_NO_DRAFT_HEADING_NO_SCOPE_COPY_SMALL_CALLOUTS_BSE_NO_LOGIC_DRIFT -->
+<!-- TOOL_MARKER_CI_DIASTOLIC_HF_V1_2_2_LOCKED_OPTION_C_DOPPLER_SUPPORT_TIGHTEN_DOPPLER_WORDING_2026_03_01 -->
+<!-- CHANGELOG (v1.2.2):
+     - Tightened Doppler wording: plain-English supportive when interpretable; explicit non-use when non-interpretable with reason.
+     - No logic change.
+     - Module 1 wording/meaning updated: “HF physiology is a likely/significant contributor…” (gate behaviour unchanged: both ticks required).
+     - Module 3: retains structural inputs (LAVI/LAE, IVS/PWT, TR Vmax, PASP); explicitly excludes LA area and excludes RAE.
+     - Added OPTIONAL Doppler fields (septal/lateral e′, E/e′, E/A, DT):
+         * Always recorded for documentation.
+         * Counts as “Doppler supportive context” ONLY if Doppler is interpretable (no AF, no significant MR, no mod/sev AS, no limited Doppler, no pacing/fusion).
+         * Never assigns diastolic grade; never creates “supportive HFpEF” alone; never overrides NP-low cap or valve-dominant safeguards.
+     - Output modulation: within existing headline outcome states, wording strengthened if Doppler supportive context present and interpretable.
+     - Numeric input guards: non-physiological (<=0) ignored; implausible values ignored and flagged.
+     - Output formatting: removed literal \n artefacts; consistent newline handling.
+     - Removed redundant Doppler attribution sentence (avoids repetition when AF/non-interpretable).
+     - BNP high threshold: >=400 (aligns with governance text).
+     - AF context remains single source of truth from Module 2 (no duplicate AF checkbox in NP module).
+-->
 
 <style>
   :root{
@@ -196,18 +211,18 @@
     border:0;
   }
 
-  /* --- KEY INTERPRETATION callouts (shorter height) --- */
+  /* --- KEY INTERPRETATION callouts --- */
   .callout{
     border:1px solid var(--border);
     border-radius:10px;
-    padding:6px 8px;     /* reduced */
-    margin:4px 0;        /* reduced */
+    padding:6px 8px;
+    margin:4px 0;
     background:#fff;
   }
   .callout .title{
     font-weight:900;
-    margin-bottom:2px;   /* reduced */
-    font-size:0.86rem;   /* reduced */
+    margin-bottom:2px;
+    font-size:0.86rem;
     line-height:1.2;
   }
   .callout.ok{
@@ -228,6 +243,17 @@
     font-weight:900;
     font-size:0.98rem;
   }
+
+  .warnList{
+    margin-top:8px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(180,83,9,.35);
+    background:rgba(180,83,9,.07);
+    color:var(--warn);
+    font-weight:800;
+    font-size:.92rem;
+  }
 </style>
 </head>
 
@@ -237,19 +263,16 @@
   <!-- HEADER -->
   <div class="card" style="background:linear-gradient(135deg,#0f766e,#064e3b); color:#ffffff;">
     <h1>Clinical Interpretation of Diastolic Function in Suspected Heart Failure</h1>
-    <p class="muted" style="color:#e5e7eb; margin-top:4px;">
-     
+
+    <p class="muted" style="color:#e5e7eb; margin-top:6px;">
+      Decision-justification framework for Acute Medicine, Geriatrics &amp; General Internal Medicine.
+      Integrates natriuretic peptides with echocardiographic context to support probabilistic diagnosis
+      and documentation, without assigning diastolic grade or definitive diagnostic labels.
     </p>
-   <p class="muted" style="color:#e5e7eb; margin-top:6px;">
-  Decision-justification framework for Acute Medicine, Geriatrics &amp; General Internal Medicine.
-  Integrates natriuretic peptides with echocardiographic context to support probabilistic diagnosis
-  and documentation, without assigning diastolic grade or definitive diagnostic labels.
-</p>
 
-<p class="tiny" style="color:#e5e7eb; margin-top:6px;">
-  Not a diagnostic HFpEF or diastolic grading tool; use within a wider guideline-based pathway.
-</p>
-
+    <p class="tiny" style="color:#e5e7eb; margin-top:6px;">
+      Not a diagnostic HFpEF or diastolic grading tool; use within a wider guideline-based pathway.
+    </p>
   </div>
 
   <!-- PURPOSE -->
@@ -276,7 +299,7 @@ This tool:
     <fieldset>
       <legend>Clinical assessment</legend>
       <label><input type="checkbox" id="hfSymptoms"> Symptoms and/or signs consistent with heart failure</label>
-      <label><input type="checkbox" id="noAltDx"> No alternative dominant diagnosis explaining the presentation</label>
+      <label><input type="checkbox" id="hfContributor"> Heart failure physiology is a likely/significant contributor to the presentation (even if co-contributors exist)</label>
     </fieldset>
 
     <div class="gate warn" id="m1Gate">
@@ -315,7 +338,7 @@ If EF ≤40%, this pathway does not apply.
         <label><input type="radio" name="rhythm" id="rhythm_sinus" value="sinus" checked> Sinus rhythm / not AF</label>
         <label><input type="radio" name="rhythm" id="rhythm_af" value="af"> Atrial fibrillation</label>
         <div class="hint">
-          AF note: standard diastolic algorithms require modified criteria in AF; this framework treats AF as non-interpretable for HFpEF attribution and records values for completeness only.
+          AF note: standard diastolic algorithms require modified criteria in AF; this framework treats AF as non-interpretable for HFpEF attribution and records Doppler values for documentation only.
         </div>
       </fieldset>
 
@@ -386,6 +409,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
         </label>
         <p class="muted">Reference: normal ≤34 ml/m².</p>
         <label><input type="checkbox" id="laQual"> LA enlargement reported qualitatively (no LAVI provided)</label>
+        <p class="hint">LA area is intentionally not used in this framework (no invented cut-offs). RAE is not used.</p>
       </fieldset>
 
       <fieldset>
@@ -418,14 +442,63 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       </fieldset>
 
       <fieldset>
+        <legend>Optional Doppler context (supportive when interpretable)</legend>
+
+        <div class="hint">
+          Doppler values are recorded when available. They are <strong>never used to assign diastolic grade</strong>.
+          If any non-interpretable condition is present (AF, significant MR, mod/sev AS, limited Doppler, pacing/fusion),
+          Doppler values are displayed as documentation only and do not contribute to supportive logic.
+        </div>
+
+        <label style="display:block; min-height:auto; user-select:auto;">
+          Septal e′ (cm/s)
+          <input type="number" id="eprime_septal" inputmode="decimal" step="0.1" placeholder="e.g. 5.8">
+        </label>
+        <label style="display:block; min-height:auto; user-select:auto;">
+          Lateral e′ (cm/s)
+          <input type="number" id="eprime_lateral" inputmode="decimal" step="0.1" placeholder="e.g. 9.2">
+        </label>
+
+        <label style="display:block; min-height:auto; user-select:auto;">
+          Average E/e′ (unitless)
+          <input type="number" id="eeprime" inputmode="decimal" step="0.1" placeholder="e.g. 17.5">
+        </label>
+
+        <label style="display:block; min-height:auto; user-select:auto;">
+          E/A ratio (unitless)
+          <input type="number" id="ea_ratio" inputmode="decimal" step="0.01" placeholder="e.g. 0.8">
+        </label>
+
+        <label style="display:block; min-height:auto; user-select:auto;">
+          Deceleration time (DT, ms)
+          <input type="number" id="dt" inputmode="decimal" step="1" placeholder="e.g. 240">
+        </label>
+
+        <div class="hint">
+          When interpretable, Doppler supportive context is treated cautiously: E/e′ &gt;14 and/or low e′ (septal &lt;7, lateral &lt;10)
+          can strengthen supportive wording but cannot independently create “supportive HFpEF”, cannot override NP-low, and cannot override valve-dominant safeguards.
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="grid two" style="margin-top:10px;">
+      <fieldset>
         <legend>Safety principle</legend>
         <p class="output">Normal resting echocardiographic surrogates do not exclude exertional or load-dependent HFpEF.</p>
         <p class="muted">HFpEF may be exertional or load/heart-rate dependent; resting echo can be neutral.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Input safety</legend>
+        <p class="muted">
+          Non-physiological values (≤0) are ignored. Implausible values are flagged and ignored to reduce risk of documentation errors.
+        </p>
       </fieldset>
     </div>
 
     <div class="outbox">
       <h3>Auto-generated echo interpretation snippets</h3>
+      <div id="inputWarnings" style="display:none;"></div>
       <p class="output" id="echoSnips">Enter available echocardiographic values above to generate supportive statements.</p>
     </div>
   </div>
@@ -445,15 +518,21 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
           NT-proBNP (pg/mL)
           <input type="number" id="ntprobnp" inputmode="decimal" step="1" placeholder="e.g. 1600">
         </label>
-        <label><input type="checkbox" id="np_af"> AF present (NP interpretation context)</label>
+
+        <!-- AF remains single source of truth from Module 2 -->
         <label><input type="checkbox" id="np_ckd"> CKD present (NP interpretation context)</label>
+
         <p class="muted">
-          NICE thresholds used: NT-proBNP &lt;400 low; 400–2000 intermediate; ≥2000 high. BNP &lt;100 low; 100–400 intermediate; &gt;400 high.
+          NICE thresholds used: NT-proBNP &lt;400 low; 400–2000 intermediate; ≥2000 high.
+          BNP &lt;100 low; 100–400 intermediate; <strong>≥400 high</strong>.
         </p>
       </fieldset>
 
       <fieldset>
         <legend>Notes</legend>
+        <p class="muted">
+          AF context is taken from <strong>Module 2 rhythm selection</strong> and applied internally to NP interpretation text.
+        </p>
         <p class="muted">
           If neither BNP nor NT-proBNP is available, NP tier is “unknown” and the tool will not output “supportive HFpEF” language or SGLT2 text.
         </p>
@@ -534,8 +613,23 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 <script>
 (function(){
   const el = (id)=>document.getElementById(id);
-  const num = (v)=> (v===null || v==='' || Number.isNaN(Number(v))) ? null : Number(v);
-  const has = (v)=> v!==null;
+  const numRaw = (v)=> (v===null || v==='' || Number.isNaN(Number(v))) ? null : Number(v);
+
+  function parsePlausible(id, opts){
+    const v = numRaw(el(id).value);
+    if (v === null) return { value:null, warn:null };
+
+    const min = (opts && typeof opts.min === 'number') ? opts.min : null;
+    const max = (opts && typeof opts.max === 'number') ? opts.max : null;
+
+    if (min !== null && v <= min){
+      return { value:null, warn:`${opts.label}: non-physiological value ignored.` };
+    }
+    if (max !== null && v > max){
+      return { value:null, warn:`${opts.label}: value appears implausible and was ignored (check entry).` };
+    }
+    return { value:v, warn:null };
+  }
 
   function isAF(){ return el('rhythm_af').checked; }
 
@@ -567,7 +661,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
   }
 
   function updateM1(){
-    const ok = el('hfSymptoms').checked && el('noAltDx').checked;
+    const ok = el('hfSymptoms').checked && el('hfContributor').checked;
     const gate = el('m1Gate');
     if (!ok){
       gate.className = 'gate warn';
@@ -615,16 +709,13 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     return true;
   }
 
-  function updateM2(){
+  function interpretability(){
     const limited = el('limitedEcho_yes').checked;
     const pacing = el('pacing_yes').checked;
     const mr = mrSeverity();
     const as = asSeverity();
     const significantMR = (mr==='moderate' || mr==='severe');
     const significantAS = (as==='moderate' || as==='severe');
-
-    const gate = el('m2Gate');
-    const text = el('m2Text');
 
     const reasons=[];
     if (isAF()) reasons.push('atrial fibrillation');
@@ -633,10 +724,20 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     if (limited) reasons.push('limited image/Doppler quality');
     if (pacing) reasons.push('pacing/tachycardia/E–A fusion');
 
-    if (reasons.length){
+    const dopplerInterpretable = reasons.length === 0;
+
+    return { limited, pacing, significantMR, significantAS, reasons, dopplerInterpretable };
+  }
+
+  function updateM2(){
+    const it = interpretability();
+    const gate = el('m2Gate');
+    const text = el('m2Text');
+
+    if (it.reasons.length){
       gate.className = 'gate warn';
       gate.innerHTML =
-        '<strong>Interpretability:</strong> Formal diastolic grading is not assigned due to ' + reasons.join(', ') + '. ' +
+        '<strong>Interpretability:</strong> Formal diastolic grading is not assigned due to ' + it.reasons.join(', ') + '. ' +
         'The tool continues using EF + structural context + natriuretic peptides (NICE-aligned).';
       text.textContent =
         'Formal diastolic grading is not assigned in this context. The tool continues using EF, structural echocardiographic context and natriuretic peptides (NICE-aligned).';
@@ -649,77 +750,17 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     }
   }
 
-  function updateEchoSnips(){
-    const snips=[];
-    const mr = mrSeverity();
-    const as = asSeverity();
-    const significantMR = (mr==='moderate' || mr==='severe');
-    const significantAS = (as==='moderate' || as==='severe');
-
-    const valveNote =
-      significantMR && significantAS ? ' (interpret cautiously in significant MR and moderate/severe AS).' :
-      significantMR ? ' (non-specific in significant MR).' :
-      significantAS ? ' (may reflect pressure overload in moderate/severe AS).' :
-      '.';
-
-    const lavi = num(el('lavi').value);
-    const laQual = el('laQual').checked;
-
-    if (has(lavi)){
-      if (lavi>34){
-        snips.push(`Left atrial volume index is ${lavi.toFixed(1)} ml/m² (normal ≤34). Left atrial enlargement supports chronic atrial/diastolic burden${valveNote}`);
-      } else {
-        snips.push(`Left atrial volume index is ${lavi.toFixed(1)} ml/m² (normal ≤34). Normal LA size does not exclude HFpEF.`);
-      }
-    } else if (laQual){
-      snips.push(`Left atrial enlargement reported qualitatively (LAVI not provided). Left atrial enlargement supports chronic atrial/diastolic burden${valveNote}`);
-    }
-
-    const ivs = num(el('ivs').value);
-    const pwd = num(el('pwd').value);
-    if (has(ivs) || has(pwd)){
-      const thick = (has(ivs)&&ivs>=11) || (has(pwd)&&pwd>=11);
-      const parts=[];
-      if (has(ivs)) parts.push(`septal ${ivs.toFixed(1)} mm`);
-      if (has(pwd)) parts.push(`posterior ${pwd.toFixed(1)} mm`);
-      if (thick){
-        snips.push(`LV wall thickness (${parts.join(', ')}) indicates LV wall thickening, supporting a pressure-loading phenotype consistent with HFpEF.`);
-      } else {
-        snips.push(`LV wall thickness (${parts.join(', ')}) is within normal limits; absence of LVH does not exclude HFpEF.`);
-      }
-    }
-
-    const tr = num(el('trvmax').value);
-    const pasp = num(el('pasp').value);
-    if (has(tr)){
-      if (tr>2.8){
-        snips.push(`TR Vmax ${tr.toFixed(2)} m/s (>2.8) supports elevated pulmonary pressures in context${valveNote}`);
-      } else {
-        snips.push(`TR Vmax ${tr.toFixed(2)} m/s (≤2.8). Normal TR velocity does not exclude HFpEF.`);
-      }
-    } else if (has(pasp)){
-      if (pasp>35){
-        snips.push(`Estimated PASP ${Math.round(pasp)} mmHg (>35) supports elevated pulmonary pressures in context${valveNote}`);
-      } else {
-        snips.push(`Estimated PASP ${Math.round(pasp)} mmHg (≤35). Normal PASP does not exclude HFpEF.`);
-      }
-    }
-
-    el('echoSnips').textContent = snips.length ? snips.join('\n\n')
-      : 'Enter available echocardiographic values above to generate supportive statements.';
-  }
-
   function npTier(){
-    const nt = num(el('ntprobnp').value);
-    if (has(nt)){
+    const nt = numRaw(el('ntprobnp').value);
+    if (nt !== null){
       if (nt < 400) return 'low';
       if (nt >= 2000) return 'high';
       return 'mid';
     }
-    const bnp = num(el('bnp').value);
-    if (has(bnp)){
+    const bnp = numRaw(el('bnp').value);
+    if (bnp !== null){
       if (bnp < 100) return 'low';
-      if (bnp > 400) return 'high';
+      if (bnp >= 400) return 'high'; // >=400 alignment
       return 'mid';
     }
     return '';
@@ -727,16 +768,17 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 
   function updateNPSnip(){
     const tier = npTier();
+
     const ctx=[];
-    if (el('np_af').checked) ctx.push('AF');
+    if (isAF()) ctx.push('AF');
     if (el('np_ckd').checked) ctx.push('CKD');
     const ctxStr = ctx.length ? ` Context: ${ctx.join(', ')}.` : '';
 
-    const bnp = num(el('bnp').value);
-    const nt = num(el('ntprobnp').value);
+    const bnp = numRaw(el('bnp').value);
+    const nt = numRaw(el('ntprobnp').value);
     let vals='';
-    if (has(bnp)) vals += `BNP ${Math.round(bnp)} pg/mL. `;
-    if (has(nt)) vals += `NT-proBNP ${Math.round(nt)} pg/mL. `;
+    if (bnp !== null) vals += `BNP ${Math.round(bnp)} pg/mL. `;
+    if (nt !== null) vals += `NT-proBNP ${Math.round(nt)} pg/mL. `;
 
     if (!tier){
       el('npSnip').textContent = 'Enter BNP and/or NT-proBNP to generate NP interpretation.';
@@ -761,6 +803,174 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     `;
   }
 
+  function updateEchoSnips(){
+    const it = interpretability();
+
+    const warnings = [];
+
+    // Structural values with plausibility guards
+    const laviObj = parsePlausible('lavi', { min:0, max:200, label:'LAVI' });
+    if (laviObj.warn) warnings.push(laviObj.warn);
+    const lavi = laviObj.value;
+
+    const ivsObj = parsePlausible('ivs', { min:0, max:30, label:'Septal thickness' });
+    if (ivsObj.warn) warnings.push(ivsObj.warn);
+    const ivs = ivsObj.value;
+
+    const pwdObj = parsePlausible('pwd', { min:0, max:30, label:'Posterior wall thickness' });
+    if (pwdObj.warn) warnings.push(pwdObj.warn);
+    const pwd = pwdObj.value;
+
+    const trObj = parsePlausible('trvmax', { min:0, max:6, label:'TR Vmax' });
+    if (trObj.warn) warnings.push(trObj.warn);
+    const tr = trObj.value;
+
+    const paspObj = parsePlausible('pasp', { min:0, max:120, label:'PASP' });
+    if (paspObj.warn) warnings.push(paspObj.warn);
+    const pasp = paspObj.value;
+
+    // Doppler optional fields with plausibility guards
+    const epsObj = parsePlausible('eprime_septal', { min:0, max:30, label:'Septal e′' });
+    if (epsObj.warn) warnings.push(epsObj.warn);
+    const eSept = epsObj.value;
+
+    const eplObj = parsePlausible('eprime_lateral', { min:0, max:30, label:'Lateral e′' });
+    if (eplObj.warn) warnings.push(eplObj.warn);
+    const eLat = eplObj.value;
+
+    const eeObj = parsePlausible('eeprime', { min:0, max:60, label:'E/e′' });
+    if (eeObj.warn) warnings.push(eeObj.warn);
+    const ee = eeObj.value;
+
+    const eaObj = parsePlausible('ea_ratio', { min:0, max:5, label:'E/A ratio' });
+    if (eaObj.warn) warnings.push(eaObj.warn);
+    const ea = eaObj.value;
+
+    const dtObj = parsePlausible('dt', { min:0, max:600, label:'Deceleration time' });
+    if (dtObj.warn) warnings.push(dtObj.warn);
+    const dt = dtObj.value;
+
+    // warnings UI
+    const wEl = el('inputWarnings');
+    if (warnings.length){
+      wEl.style.display = 'block';
+      wEl.className = 'warnList';
+      wEl.textContent = 'Input check: ' + warnings.join(' ');
+    } else {
+      wEl.style.display = 'none';
+      wEl.className = '';
+      wEl.textContent = '';
+    }
+
+    const snips=[];
+    const mr = mrSeverity();
+    const as = asSeverity();
+    const significantMR = (mr==='moderate' || mr==='severe');
+    const significantAS = (as==='moderate' || as==='severe');
+
+    const valveNote =
+      (significantMR && significantAS) ? ' (interpret cautiously in significant MR and moderate/severe AS).' :
+      significantMR ? ' (non-specific in significant MR).' :
+      significantAS ? ' (may reflect pressure overload in moderate/severe AS).' :
+      '.';
+
+    const laQual = el('laQual').checked;
+
+    if (lavi !== null){
+      if (lavi > 34){
+        snips.push(`Left atrial volume index is ${lavi.toFixed(1)} ml/m² (normal ≤34). Left atrial enlargement supports chronic atrial/diastolic burden${valveNote}`);
+      } else {
+        snips.push(`Left atrial volume index is ${lavi.toFixed(1)} ml/m² (normal ≤34). Normal LA size does not exclude HFpEF.`);
+      }
+    } else if (laQual){
+      snips.push(`Left atrial enlargement reported qualitatively (LAVI not provided). Left atrial enlargement supports chronic atrial/diastolic burden${valveNote}`);
+    }
+
+    if (ivs !== null || pwd !== null){
+      const thick = (ivs !== null && ivs >= 11) || (pwd !== null && pwd >= 11);
+      const parts=[];
+      if (ivs !== null) parts.push(`septal ${ivs.toFixed(1)} mm`);
+      if (pwd !== null) parts.push(`posterior ${pwd.toFixed(1)} mm`);
+      if (thick){
+        snips.push(`LV wall thickness (${parts.join(', ')}) indicates LV wall thickening, supporting a pressure-loading phenotype consistent with HFpEF.`);
+      } else {
+        snips.push(`LV wall thickness (${parts.join(', ')}) is within normal limits; absence of LVH does not exclude HFpEF.`);
+      }
+    }
+
+    // Show TR and/or PASP snippets if entered (not mutually exclusive)
+    if (tr !== null){
+      if (tr > 2.8){
+        snips.push(`TR Vmax ${tr.toFixed(2)} m/s (>2.8) supports elevated pulmonary pressures in context${valveNote}`);
+      } else {
+        snips.push(`TR Vmax ${tr.toFixed(2)} m/s (≤2.8). Normal TR velocity does not exclude HFpEF.`);
+      }
+    }
+    if (pasp !== null){
+      if (pasp > 35){
+        snips.push(`Estimated PASP ${Math.round(pasp)} mmHg (>35) supports elevated pulmonary pressures in context${valveNote}`);
+      } else {
+        snips.push(`Estimated PASP ${Math.round(pasp)} mmHg (≤35). Normal PASP does not exclude HFpEF.`);
+      }
+    }
+
+    // Doppler documentation snippets
+    const anyDoppler = (eSept !== null || eLat !== null || ee !== null || ea !== null || dt !== null);
+    if (anyDoppler){
+      const parts=[];
+      if (eSept !== null) parts.push(`septal e′ ${eSept.toFixed(1)} cm/s`);
+      if (eLat !== null) parts.push(`lateral e′ ${eLat.toFixed(1)} cm/s`);
+      if (ee !== null) parts.push(`E/e′ ${ee.toFixed(1)}`);
+      if (ea !== null) parts.push(`E/A ${ea.toFixed(2)}`);
+      if (dt !== null) parts.push(`DT ${Math.round(dt)} ms`);
+
+      if (!it.dopplerInterpretable){
+        snips.push(`Doppler indices recorded for completeness (${parts.join(', ')}). Not used to support HFpEF attribution here because of ${it.reasons.join(', ')}.`);
+      } else {
+        snips.push(`Doppler indices (${parts.join(', ')}) provide supportive evidence consistent with raised filling pressures/diastolic dysfunction in context. No diastolic grade is assigned and Doppler findings do not independently establish HFpEF.`);
+      }
+    }
+
+    el('echoSnips').textContent = snips.length ? snips.join('\n\n')
+      : 'Enter available echocardiographic values above to generate supportive statements.';
+  }
+
+  function computeSupportFlags(){
+    // Structural values
+    const lavi = parsePlausible('lavi', { min:0, max:200, label:'LAVI' }).value;
+    const laQual = el('laQual').checked;
+    const laSupport = ((lavi !== null) && lavi > 34) || laQual;
+
+    const ivs = parsePlausible('ivs', { min:0, max:30, label:'Septal thickness' }).value;
+    const pwd = parsePlausible('pwd', { min:0, max:30, label:'Posterior wall thickness' }).value;
+    const lvhSupport = ((ivs !== null) && ivs >= 11) || ((pwd !== null) && pwd >= 11);
+
+    const tr = parsePlausible('trvmax', { min:0, max:6, label:'TR Vmax' }).value;
+    const pasp = parsePlausible('pasp', { min:0, max:120, label:'PASP' }).value;
+    const pulmSupport = ((tr !== null) && tr > 2.8) || ((pasp !== null) && pasp > 35);
+
+    const structuralSupport = laSupport || lvhSupport || pulmSupport;
+
+    // Doppler values
+    const it = interpretability();
+    const eSept = parsePlausible('eprime_septal', { min:0, max:30, label:'Septal e′' }).value;
+    const eLat  = parsePlausible('eprime_lateral', { min:0, max:30, label:'Lateral e′' }).value;
+    const ee    = parsePlausible('eeprime', { min:0, max:60, label:'E/e′' }).value;
+
+    // Conservative Doppler support definition:
+    // - Only if interpretable
+    // - Only if E/e′ >14 OR e′ clearly low (septal<7 OR lateral<10)
+    // - DOES NOT create supportive output by itself; only modulates wording
+    let dopplerSupport = false;
+    if (it.dopplerInterpretable){
+      if (ee !== null && ee > 14) dopplerSupport = true;
+      if (eSept !== null && eSept < 7) dopplerSupport = true;
+      if (eLat !== null && eLat < 10) dopplerSupport = true;
+    }
+
+    return { structuralSupport, dopplerSupport, dopplerInterpretable: it.dopplerInterpretable };
+  }
+
   function buildFinal(){
     if (!(updateM1() && updateEF())) return;
 
@@ -768,52 +978,43 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
     updateEchoSnips();
     updateNPSnip();
 
+    const it = interpretability();
+
     const mr = mrSeverity();
     const as = asSeverity();
     const significantMR = (mr==='moderate' || mr==='severe');
     const significantAS = (as==='moderate' || as==='severe');
 
-    const limited = el('limitedEcho_yes').checked;
-    const pacing = el('pacing_yes').checked;
-
-    const limitations=[];
-    if (isAF()) limitations.push('atrial fibrillation');
-    if (significantMR) limitations.push('significant mitral regurgitation');
-    if (significantAS) limitations.push('moderate/severe aortic stenosis');
-    if (limited) limitations.push('limited image/Doppler quality');
-    if (pacing) limitations.push('pacing/tachycardia/E–A fusion');
+    const limitations = it.reasons.slice();
 
     const echoText = el('echoSnips').textContent.startsWith('Enter') ? '' : el('echoSnips').textContent;
     const npText = el('npSnip').textContent.startsWith('Enter') ? '' : el('npSnip').textContent;
-
-    const lavi = num(el('lavi').value);
-    const laSupport = (has(lavi) && lavi > 34) || el('laQual').checked;
-    const ivs = num(el('ivs').value);
-    const pwd = num(el('pwd').value);
-    const lvhSupport = (has(ivs) && ivs >= 11) || (has(pwd) && pwd >= 11);
-    const tr = num(el('trvmax').value);
-    const pasp = num(el('pasp').value);
-    const pulmSupport = (has(tr) && tr > 2.8) || (has(pasp) && pasp > 35);
-    const structuralSupport = laSupport || lvhSupport || pulmSupport;
 
     const tier = npTier();
     const npLowFlag = (tier === 'low');
     const npHighFlag = (tier === 'high');
     const npKnown = (tier !== '');
 
+    const flags = computeSupportFlags();
+    const structuralSupport = flags.structuralSupport;
+    const dopplerSupport = flags.dopplerSupport;
+
+    // Outcome state (categories unchanged)
     let hfpEfStatus = 'indeterminate';
     if (!npKnown) hfpEfStatus = 'indeterminate';
     else if (npLowFlag) hfpEfStatus = 'not_supportive';
     else if (structuralSupport) hfpEfStatus = 'supportive';
     else hfpEfStatus = 'indeterminate';
 
-    if (significantAS) hfpEfStatus = 'indeterminate'; // AS-dominant safeguard
+    // Valve dominant safeguards override (AS dominant)
+    if (significantAS) hfpEfStatus = 'indeterminate';
 
     const interpretive = [];
     const treatment = [];
 
     interpretive.push(`<div class="sectionHead">INTERPRETIVE DOCUMENTATION</div>`);
 
+    // Valve dominant pathways
     if (significantMR){
       interpretive.push(`<div>${[
         'The patient has clinical features consistent with a heart failure syndrome with preserved or mildly reduced ejection fraction.',
@@ -863,6 +1064,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       </ul>`);
 
     } else {
+      // General pathway
       const para = [];
       para.push('The patient has clinical features consistent with a heart failure syndrome with preserved or mildly reduced ejection fraction.');
 
@@ -886,6 +1088,7 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 
       interpretive.push(`<div>${para.join(' ')}</div>`);
 
+      // Outcome callouts (categories unchanged; wording modulated by Doppler support)
       if (!npKnown){
         interpretive.push(calloutHTML(
           'warn',
@@ -905,17 +1108,25 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
           'Echocardiography is structurally neutral and does not provide supportive structural evidence of HFpEF. In the setting of natriuretic peptide values that are not low, discordance between biomarkers and resting structural findings means HFpEF probability remains indeterminate; consider alternative explanations and reassess if the presentation evolves.'
         ));
       } else {
-        interpretive.push(calloutHTML(
-          'ok',
-          'KEY INTERPRETATION (Supportive HFpEF phenotype)',
-          'Taken together, the overall picture may be supportive of a HFpEF phenotype in this clinical context. This remains probabilistic and should be interpreted alongside symptoms, comorbidity burden and response to treatment, with planned reassessment.'
-        ));
+        if (dopplerSupport){
+          interpretive.push(calloutHTML(
+            'ok',
+            'KEY INTERPRETATION (Supportive HFpEF phenotype — more supportive context)',
+            'Taken together, the overall picture is more supportive of a HFpEF phenotype in this clinical context. This remains probabilistic and should be interpreted alongside symptoms, comorbidity burden and response to treatment, with planned reassessment.'
+          ));
+        } else {
+          interpretive.push(calloutHTML(
+            'ok',
+            'KEY INTERPRETATION (Supportive HFpEF phenotype)',
+            'Taken together, the overall picture may be supportive of a HFpEF phenotype in this clinical context. This remains probabilistic and should be interpreted alongside symptoms, comorbidity burden and response to treatment, with planned reassessment.'
+          ));
+        }
       }
 
+      // Treatment block (unchanged posture)
       treatment.push(`<div class="sectionHead">TREATMENT GUIDANCE (CONTEXT-DEPENDENT, NON-DIRECTIVE)</div>`);
 
       const efCat = efCategory();
-
       if ((efCat === 'ge50' || efCat === '41_49') && npKnown && npHighFlag && structuralSupport && !significantAS){
         treatment.push(`<ul><li>Consideration of SGLT2 inhibitor therapy is supported by evidence in heart failure populations with preserved or mildly reduced ejection fraction, independent of formal diastolic grading; initiate with appropriate renal function review and monitoring.</li></ul>`);
       }
@@ -925,11 +1136,9 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
         other.push('Atrial fibrillation is a recognised HFpEF-associated phenotype; optimisation of AF management (rate/rhythm strategy as clinically appropriate) and comorbidity control forms part of holistic care.');
       }
       other.push('Diuretic therapy, where required, should be guided by clinical congestion and response rather than diastolic indices alone, with monitoring of renal function and electrolytes.');
-
       treatment.push(`<ul>${other.map(x=>`<li>${x}</li>`).join('')}</ul>`);
     }
 
-    // IMPORTANT: no scope sentence appended here (per your request)
     el('copyBlock').innerHTML = interpretive.join('\n');
     el('treatBlock').innerHTML = treatment.join('\n');
     el('copyBtn').disabled = false;
@@ -979,11 +1188,17 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
       if (i.type==='number') i.value='';
     });
 
+    // defaults
     el('mr_none').checked = true;
     el('as_none').checked = true;
     el('rhythm_sinus').checked = true;
     el('limitedEcho_no').checked = true;
     el('pacing_no').checked = true;
+    el('np_ckd').checked = false;
+
+    el('inputWarnings').style.display='none';
+    el('inputWarnings').className='';
+    el('inputWarnings').textContent='';
 
     el('echoSnips').textContent = 'Enter available echocardiographic values above to generate supportive statements.';
     el('npSnip').textContent = 'Enter BNP and/or NT-proBNP to generate NP interpretation.';
@@ -1013,5 +1228,3 @@ Formal diastolic grading is not assigned in this context. The tool continues usi
 
 </body>
 </html>
-
-
